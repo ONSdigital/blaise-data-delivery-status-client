@@ -6,24 +6,34 @@ from google.oauth2 import id_token
 
 from .config import Config
 from .exceptions import StateValidationException
-from .states import state_is_valid
 
 
 class Client:
     def __init__(self, config: Config) -> None:
         self.config = config
+        self.states: Dict[str, str] = {}
 
     def update_state(
         self, filename: str, state: str, error_info: Optional[str] = None
     ) -> requests.Response:
-        if not state_is_valid(state):
-            raise StateValidationException(state)
+        if not self.state_is_valid(state):
+            raise StateValidationException(state, self.get_states())
         payload = {"state": state}
         if error_info:
             payload["error_info"] = error_info
         return requests.patch(
             self._update_url(filename), json=payload, headers=self._headers()
         )
+
+    def get_states(self) -> Dict[str, str]:
+        if self.states == {}:
+            self.states = requests.get(
+                f"{self.config.url}/v1/state/descriptions", headers=self._headers()
+            ).json()
+        return self.states
+
+    def state_is_valid(self, state: str) -> bool:
+        return state in self.get_states().keys()
 
     def _update_url(self, filename: str) -> str:
         return f"{self.config.url}/v1/state/{filename}"
