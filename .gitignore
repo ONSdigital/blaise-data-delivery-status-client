@@ -7,3 +7,5 @@ __pycache__
 app.yaml
 /coverage.xml
 /.coverage
+.mypy_cache
+.pytest_cache

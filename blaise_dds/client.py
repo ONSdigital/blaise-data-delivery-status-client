@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Dict, Optional
 
 import requests
 from google.auth.transport.requests import Request
@@ -19,15 +19,19 @@ class Client:
         if not state_is_valid(state):
             raise StateValidationException(state)
         payload = {"state": state}
-        headers = {}
         if error_info:
             payload["error_info"] = error_info
-        if self.config.client_id:
-            headers = {"Authorization": f"Bearer {self.auth_token()}"}
-        return requests.patch(self._update_url(filename), json=payload, headers=headers)
+        return requests.patch(
+            self._update_url(filename), json=payload, headers=self._headers()
+        )
 
     def _update_url(self, filename: str) -> str:
         return f"{self.config.url}/v1/state/{filename}"
+
+    def _headers(self) -> Dict[str, str]:
+        if self.config.client_id:
+            return {"Authorization": f"Bearer {self.auth_token()}"}
+        return {}
 
     def auth_token(self) -> str:
         return id_token.fetch_id_token(Request(), self.config.client_id)
