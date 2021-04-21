@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "blaise_dds"
-version = "0.1.1"
+version = "0.2.0"
 description = ""
 authors = ["Blaise 5 Team"]
 packages = [
